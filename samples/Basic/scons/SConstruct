@@ -2,6 +2,7 @@ env = Environment()
 
 env['APP_TARGET'] = 'BasicApp'
 env['APP_SOURCES'] = ['BasicApp.cpp']
+env['ASSETS'] = ['imgui.ini']
 
 env = SConscript('../../../scons/SConscript', exports = 'env')
 
