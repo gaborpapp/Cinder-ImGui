@@ -1,0 +1,13 @@
+Import('env')
+
+_INCLUDES = Split('../include ../lib/imgui')
+_INCLUDES = [Dir(d).abspath for d in _INCLUDES]
+_SRC = ['../src/CinderImGui.cpp']
+_SRC = [File(s).abspath for s in _SRC]
+_IMGUI_SRC = Split('imgui.cpp imgui_draw.cpp imgui_demo.cpp')
+_IMGUI_SRC = [File('../lib/imgui/' + s).abspath for s in _IMGUI_SRC]
+
+env.Append(CPPPATH = _INCLUDES)
+env.Append(APP_SOURCES = _SRC + _IMGUI_SRC)
+
+Return('env')

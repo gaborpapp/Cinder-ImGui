@@ -18,3 +18,9 @@ build//
 Debug/
 Release/
 ipch/
+
+# Scons cruft
+*.o
+*.app
+.sconsign.dblite
+*.sw[a-z]
