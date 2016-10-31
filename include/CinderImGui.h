@@ -81,7 +81,7 @@ namespace ImGui {
 		//! sets the font to use in ImGui
 		Options& font( const ci::fs::path &fontPath, float size );
 		//! sets the list of available fonts to use in ImGui
-		Options& fonts( const std::vector<std::pair<ci::fs::path,float>> &fontPaths );
+		Options& fonts( const std::vector<std::pair<ci::fs::path,float>> &fontPaths, bool merge = true );
 		//! sets the font to use in ImGui
 		Options& fontGlyphRanges( const std::string &name, const std::vector<ImWchar> &glyphRanges );
         //! sets global font scale
@@ -150,14 +150,17 @@ namespace ImGui {
 		const std::vector<std::pair<ci::fs::path,float>>& getFonts() const { return mFonts; }
 		//! returns the glyph ranges if available for this font
 		const ImWchar* getFontGlyphRanges( const std::string &name ) const;
+		//! returns whether the fonts need to be merged
+		bool getFontMergeMode() const { return mMergeFonts; }
 		//! returns the window that will be use to connect the signals and render ImGui
 		const ImGuiStyle& getStyle() const { return mStyle; }
 		//! returns imgui ini file path
 		const ci::fs::path& getIniPath() const { return mIniPath; }
 		
 	protected:
-		bool						mAutoRender;
-		ImGuiStyle					mStyle;
+		bool							mAutoRender;
+		ImGuiStyle						mStyle;
+		bool							mMergeFonts;
 		std::vector<std::pair<ci::fs::path,float>>	mFonts;
 		std::map<std::string,std::vector<ImWchar>>	mFontsGlyphRanges;
 		ci::app::WindowRef				mWindow;
@@ -205,7 +208,11 @@ namespace ImGui {
 	bool DragInt3(const char* label, T *object, ci::ivec3( T::*get )() const, void( T::*set )( const ci::ivec3& ), float v_speed = 1.0f, int v_min = 0, int v_max = 0, const char* display_format = "%.0f" );
 	template<typename T>
 	bool DragInt4(const char* label, T *object, ci::ivec4( T::*get )() const, void( T::*set )( const ci::ivec4& ), float v_speed = 1.0f, int v_min = 0, int v_max = 0, const char* display_format = "%.0f" );
-	
+	template<typename T>
+	bool ColorPicker3( const char* label, T *object, ci::Color( T::*get )() const, void( T::*set )( const ci::Color& ) );
+	template<typename T>
+	bool ColorPicker4( const char* label, T *object, ci::ColorA( T::*get )() const, void( T::*set )( const ci::ColorA& ) );
+
 	// Scoped objects goodness (push the state when created and pop it when destroyed)
 
 	struct ScopedWindow : public ci::Noncopyable {
@@ -261,7 +268,27 @@ namespace ImGui {
 	protected:
 		bool mOpened;
 	};
+
+
+	// Custom widgets
+	IMGUI_API bool FilePicker( const char* label, ci::fs::path* path, bool open = true, const ci::fs::path &initialPath = ci::fs::path(), std::vector<std::string> extensions = std::vector<std::string>() );
+	IMGUI_API bool IconButton( const char* icon, const ImVec2& size = ImVec2(0,0), bool frame = false );
+	IMGUI_API bool IconToggle( const char* iconEnabled, const char* iconDisabled, bool *enabled, const ImVec2& size = ImVec2(0,0), bool frame = false );
+	IMGUI_API bool ColorPicker3( const char* label, float col[3] );
+	IMGUI_API bool ColorPicker4( const char* label, float col[4] );
 	
+	// Dock From LumixEngine
+	// https://github.com/nem0/LumixEngine/blob/master/external/imgui/imgui_dock.h
+	// https://github.com/ocornut/imgui/issues/351
+	// #define IMGUI_DOCK
+#if defined( IMGUI_DOCK )
+	IMGUI_API void ShutdownDock();
+	IMGUI_API void RootDock(const ImVec2& pos, const ImVec2& size);
+	IMGUI_API bool BeginDock(const char* label, bool* opened = nullptr, ImGuiWindowFlags extra_flags = 0);
+	IMGUI_API void EndDock();
+	IMGUI_API void SetDockActive();
+#endif
+
 	// Getters/Setters Helpers Implementation
 	template<typename T>
 	bool InputText( const char* label, T *object, std::string( T::*get )() const, void( T::*set )( const std::string& ), ImGuiInputTextFlags flags, ImGuiTextEditCallback callback, void* user_data )
@@ -370,6 +397,26 @@ namespace ImGui {
 	{
 		ci::ivec4 value = (object->*get)();
 		if( DragInt4( label, &value[0], v_speed, v_min, v_max, display_format ) ){
+			(object->*set)( value );
+			return true;
+		}
+		return false;
+	}
+	template<typename T>
+	bool ColorPicker3( const char* label, T *object, ci::Color( T::*get )() const, void( T::*set )( const ci::Color& ) )
+	{
+		ci::Color value = (object->*get)();
+		if( ColorPicker3( label, &value[0] ) ){
+			(object->*set)( value );
+			return true;
+		}
+		return false;
+	}
+	template<typename T>
+	bool ColorPicker4( const char* label, T *object, ci::ColorA( T::*get )() const, void( T::*set )( const ci::ColorA& ) )
+	{
+		ci::ColorA value = (object->*get)();
+		if( ColorPicker4( label, &value[0] ) ){
 			(object->*set)( value );
 			return true;
 		}
