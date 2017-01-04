@@ -8,7 +8,7 @@ xcuserdata/
 *.xccheckout
 .DS_Store
 
-build//
+build/
 
 # Windows cruft
 *.suo
