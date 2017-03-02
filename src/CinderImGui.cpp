@@ -402,7 +402,7 @@ void Renderer::render( ImDrawData* draw_data )
 			else {
 				gl::ScopedVao scopedVao( getVao().get() );
 				gl::ScopedBuffer scopedIndexBuffer( mIbo );
-				gl::ScopedGlslProg scopedShader( getGlslProg() );
+				gl::ScopedGlslProg scopedShader( shader );
 				gl::ScopedTextureBind scopedTexture( GL_TEXTURE_2D, (GLuint)(intptr_t) pcmd->TextureId );
 				gl::ScopedScissor scopedScissors( (int)pcmd->ClipRect.x, (int)(height - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y) );
 				gl::ScopedDepth scopedDepth( false );
@@ -528,7 +528,7 @@ ImFont* Renderer::addFont( const ci::fs::path &font, float size, const ImWchar* 
 				start = glyphs[i];
 			}
 		}
-		if( ranges.back() != glyphs[numGlyphs-1] ) {
+		if( ranges.empty() || ranges.back() != glyphs[numGlyphs-1] ) {
 			ranges.push_back( start );
 			ranges.push_back( glyphs[numGlyphs-1] );
 		}
@@ -1416,9 +1416,11 @@ namespace {
 
 bool ColorPicker3( const char* label, float col[3] )
 {
+	ui::PushID( label );
     bool changed = ColorPickerImpl( &col[0], false );
 	SameLine();
 	TextUnformatted( label );
+	ui::PopID();
 	return changed;
 }
 		
