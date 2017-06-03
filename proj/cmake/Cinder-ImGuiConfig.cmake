@@ -18,4 +18,12 @@ if ( NOT TARGET Cinder-ImGui )
 
 	target_include_directories( Cinder-ImGui PUBLIC "${CINDER_IMGUI_INCLUDES}" )
 	target_include_directories( Cinder-ImGui SYSTEM BEFORE PUBLIC "${CINDER_PATH}/include" )
+
+	if( NOT TARGET cinder )
+		include( "${CINDER_PATH}/proj/cmake/configure.cmake" )
+		find_package( cinder REQUIRED PATHS
+			"${CINDER_PATH}/${CINDER_LIB_DIRECTORY}"
+			"$ENV{CINDER_PATH}/${CINDER_LIB_DIRECTORY}" )
+	endif()
+	target_link_libraries( Cinder-ImGui PRIVATE cinder )
 endif()
